@@ -5,16 +5,15 @@
     "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "outDir": "dist",
-    "strict": false,
+    "rootDir": "src",
+    "strict": true,
     "declaration": true,
     "sourceMap": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "noImplicitAny": false,
-    "ignoreDeprecations": "5.0"
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 } 

@@ -1,15 +1,26 @@
-declare module '@modelcontextprotocol/sdk' {
-  export class McpServer {
-    constructor(options: { transport: any });
+declare module '@modelcontextprotocol/sdk/server/index.js' {
+  export class Server {
+    constructor(serverInfo: { name: string; version: string }, options?: { capabilities: any });
+    setRequestHandler(schema: any, handler: any): void;
+    connect(transport: any): Promise<void>;
     registerToolsHandler(handler: () => Promise<any[]>): void;
     registerPromptsHandler(handler: () => Promise<any[]>): void;
     registerGetPromptHandler(handler: (promptName: string, args: any) => Promise<any>): void;
     registerCallToolHandler(handler: (toolName: string, params: any) => Promise<any[]>): void;
     start(): void;
   }
+}
 
+declare module '@modelcontextprotocol/sdk/server/stdio.js' {
+  export class StdioServerTransport {
+    constructor();
+  }
+}
+
+declare module '@modelcontextprotocol/sdk/types.js' {
   export class McpError extends Error {
     constructor(code: ErrorCode, message: string);
+    code: ErrorCode;
   }
 
   export enum ErrorCode {
@@ -37,7 +48,14 @@ declare module '@modelcontextprotocol/sdk' {
     data: any;
   }
 
-  export class StdioTransport {
-    constructor();
+  export interface Tool {
+    name: string;
+    description: string;
+    inputSchema: any;
   }
+
+  export const ListToolsRequestSchema: any;
+  export const CallToolRequestSchema: any;
+  export const ListPromptsRequestSchema: any;
+  export const GetPromptRequestSchema: any;
 } 
