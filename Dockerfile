@@ -1,22 +1,23 @@
-FROM node:18-slim
+FROM node:18-alpine AS builder
+
+COPY . /app
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
+RUN npm install
 
-# Install only production dependencies
-RUN npm ci --only=production || npm install --production
+RUN npm run build
 
-# Copy pre-built application files
-COPY dist/ ./dist/
-COPY .env.example ./
+FROM node:18-alpine AS release
 
-# Make the application executable
-RUN chmod +x dist/index.js
+WORKDIR /app
 
-# The MCP protocol uses stdio, not HTTP, so no port is needed
-ENV PORT=3000
+COPY --from=builder /app/dist /app/dist
+COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/package-lock.json /app/package-lock.json
 
-# Command to run the application
-CMD ["node", "dist/index.js"]
+ENV NODE_ENV=production
+
+RUN npm ci --ignore-scripts --omit=dev
+
+ENTRYPOINT ["node", "dist/index.js"]

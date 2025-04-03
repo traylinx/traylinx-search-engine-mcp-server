@@ -42,5 +42,4 @@ startCommand:
 
 # Build configuration
 build:
-  dockerBuildPath: .
-  preBuildCommand: "./build.sh" # Run the build script before Docker build 
+  dockerBuildPath: . 
