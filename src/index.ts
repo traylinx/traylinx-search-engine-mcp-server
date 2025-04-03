@@ -105,7 +105,21 @@ const AGENTIC_SEARCH_TOOL = {
 
 // --- API Calling Function ---
 interface SearchItem { title?: string; snippet?: string; url?: string; [key: string]: any; }
-interface ApiResponse { mainContent: string; items: SearchItem[] | null; media: Record<string, any> | null; }
+interface ApiResponse { 
+    mainContent: string; 
+    items: SearchItem[] | null; 
+    media: Record<string, any> | null;
+    citations: string[] | null;
+    news?: any[] | null;
+    id?: string;
+    model?: string;
+    created?: number;
+    usage?: {
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        total_tokens?: number;
+    };
+}
 
 async function callAgenticSearchApi(query: string, recencyFilter?: string): Promise<ApiResponse> {
     // API Key & URL checked at startup, assumed valid here
@@ -136,20 +150,43 @@ async function callAgenticSearchApi(query: string, recencyFilter?: string): Prom
         const data = await response.json() as any;
         log.debug("Parsed API response.");
 
-        // Extract & Format
+        // Extract all possible fields
         let mainContent = data?.choices?.[0]?.message?.content || "";
         const citations = data?.citations as string[] | undefined;
         const items = Array.isArray(data?.items) ? data.items : null;
         const media = typeof data?.media === 'object' && data.media !== null ? data.media : null;
-        if (citations?.length) {
+        
+        // Use more data fields from the response
+        const news = media?.news || null;
+        const id = data?.id;
+        const model = data?.model;
+        const created = data?.created;
+        const usage = data?.usage;
+
+        // Format citations if present but not already in mainContent
+        if (citations?.length && !mainContent.includes("**Sources:**")) {
             const formattedCitations = "\n\n**Sources:**\n" + citations.map(c => `- <${c}>`).join("\n");
             if (mainContent) mainContent += formattedCitations;
         }
+        
+        // If no main content but we have items, format them
         if (!mainContent.trim() && items) {
              const formattedItems = "**Search Results:**\n" + items.map((item: SearchItem) => `- **${item.title || 'N/A'}**: ${item.snippet || 'N/A'}\n  <${item.url || 'N/A'}>\n`).join("");
              mainContent = formattedItems.trim();
         }
-        return { mainContent: mainContent.trim(), items, media };
+        
+        // Return complete response with all fields
+        return { 
+            mainContent: mainContent.trim(), 
+            items, 
+            media,
+            citations: citations || null,
+            news,
+            id,
+            model,
+            created,
+            usage
+        };
     } catch (error: any) {
         log.error(`Error in callAgenticSearchApi: ${error.name}: ${error.message}`);
         if (error.name === 'AbortError') throw new Error("API request timed out.");
@@ -219,10 +256,22 @@ try {
                 };
             }
 
-            const { mainContent, items, media } = await callAgenticSearchApi(query, recencyFilter);
+            const { 
+                mainContent, 
+                items, 
+                media, 
+                citations, 
+                news, 
+                id, 
+                model, 
+                created, 
+                usage 
+            } = await callAgenticSearchApi(query, recencyFilter);
 
             const responseParts = [];
             if (mainContent) responseParts.push({ type: "text", text: mainContent });
+            
+            // Add search results as embedded resource
             if (items) responseParts.push({ 
                 type: "embedded_resource", 
                 uri: "mcp://search/results", 
@@ -230,9 +279,48 @@ try {
                 data: { results: items }
             });
             
+            // Add citations as a specific resource
+            if (citations && citations.length > 0) {
+                responseParts.push({ 
+                    type: "embedded_resource", 
+                    uri: "mcp://search/citations", 
+                    title: "Citations", 
+                    data: { citations }
+                });
+            }
+            
+            // Add usage metrics if available
+            if (usage) {
+                responseParts.push({ 
+                    type: "embedded_resource", 
+                    uri: "mcp://search/metadata", 
+                    title: "Search Metadata", 
+                    data: { 
+                        id, 
+                        model, 
+                        created,
+                        usage
+                    }
+                });
+            }
+            
+            // Add news as a specific resource type
+            if (news && news.length) {
+                responseParts.push({ 
+                    type: "embedded_resource", 
+                    uri: "mcp://search/news", 
+                    title: "News Results", 
+                    data: { news }
+                });
+            }
+            
+            // Process other media types 
             if (media) {
                 for (const [mediaType, mediaData] of Object.entries(media)) {
-                    if (mediaData && (Array.isArray(mediaData) || typeof mediaData === 'string')) {
+                    // Skip news since we already handled it
+                    if (mediaType === 'news') continue;
+                    
+                    if (mediaData && (Array.isArray(mediaData) || typeof mediaData === 'string' || typeof mediaData === 'object')) {
                         const uri = mediaType === "html" ? "mcp://scraped/html" : `mcp://media/${mediaType}`;
                         const desc = mediaType === "html" ? "Scraped HTML" : `${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} Results`;
                         responseParts.push({ 
