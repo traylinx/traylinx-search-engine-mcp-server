@@ -33,4 +33,6 @@ yarn-error.log*
 *.log
 
 # Coverage
-/coverage 
+/coverage
+cat_content.sh
+app_content.txt

@@ -1,45 +1,40 @@
-# Smithery configuration file for the TypeScript Server:
-# https://smithery.ai/docs/config#smitheryyaml
+# Smithery configuration file for traylinx-search-mcp-server (TypeScript)
+# https://smithery.ai/docs/config
+
+# Specifies the build context for Docker relative to this file
+build:
+  dockerBuildPath: .  # Assumes Dockerfile is in the same directory (root)
 
 startCommand:
   type: stdio
   configSchema:
-    # This part defines what configuration the user needs to provide
+    # Defines user configuration needed
     type: object
     required:
-      # The API key is essential for the server to function
       - agenticSearchApiKey
     properties:
       agenticSearchApiKey:
         type: string
-        description: The API key for your Agentic Search API. This will be set as an environment variable for the server process.
+        description: Your API key for the Agentic Search API from Traylinx.com.
       agenticSearchApiUrl:
         type: string
-        description: The base URL for your Agentic Search API.
-        default: "https://agentic-search-engines-n3n7u.ondigitalocean.app" # Your default URL
+        description: The base URL for the Agentic Search API (Optional).
+        default: "https://agentic-search-engines-n3n7u.ondigitalocean.app"
       logLevel:
          type: string
-         description: Logging level for the server (e.g., INFO, DEBUG).
+         description: Server logging level (e.g., INFO, DEBUG).
          default: "INFO"
 
   commandFunction:
-    # This JavaScript function tells Smithery HOW to run your compiled code
-    # It receives the 'config' object containing values the user entered
+    # Tells Smithery how to run the compiled JavaScript code
     |-
     config => ({
-      // Command to execute: node (to run JavaScript)
       command: 'node',
-      // Arguments for the command: path to the compiled main file
-      args: ['dist/index.js'], // Assumes your tsconfig.json compiles src/index.ts to dist/index.js
+      args: ['dist/index.js'], // Path to compiled output
       env: {
-          // Pass the configuration values from the user input
-          // into the environment variables for the node process
+          // Maps user config to environment variables for the server process
           AGENTIC_SEARCH_API_KEY: config.agenticSearchApiKey,
-          AGENTIC_SEARCH_API_URL: config.agenticSearchApiUrl || 'https://agentic-search-engines-n3n7u.ondigitalocean.app', // Use default if not provided
-          LOG_LEVEL: config.logLevel || 'INFO' // Use default if not provided
+          AGENTIC_SEARCH_API_URL: config.agenticSearchApiUrl || 'https://agentic-search-engines-n3n7u.ondigitalocean.app',
+          LOG_LEVEL: config.logLevel || 'INFO'
       }
-    })
-
-# Build configuration
-build:
-  dockerBuildPath: . 
+    }) 
