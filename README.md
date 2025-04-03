@@ -6,18 +6,19 @@ A Model Context Protocol (MCP) server that acts as a bridge to the deployed **Ag
 
 ## Tools
 
-### `agentic_search`
-Performs intelligent searches across the web with advanced capabilities including text extraction, HTML parsing, and media handling.
+### `search`
+Perform a web search using Traylinx's API, which provides detailed and contextually relevant results with citations. By default, no time filtering is applied to search results.
 
 **Inputs:**
-- `query` (string): The search query, question, or URL to process.
+- `query` (string): The search query to perform.
+- `search_recency_filter` (string, optional): Filter search results by recency. Options: "month", "week", "day", "hour". If not specified, no time filtering is applied.
 
 ## How it Works
 
 1. You configure this MCP server with your Agentic Search API URL and API Key (via environment variables passed by the client config).
-2. An MCP client (e.g., Claude) sends a tool call to this server with a `query`.
+2. An MCP client (e.g., Claude) sends a tool call to this server with a search query and optional recency filter.
 3. This MCP server makes a request to the Agentic Search API with the query and authorization header.
-4. It parses the rich response (text, HTML, search results, media) and returns structured content to the MCP client.
+4. It parses the rich response (text, HTML, search results, media, news) and returns structured content to the MCP client.
 
 ## Installation
 
@@ -97,7 +98,8 @@ Edit your `mcp.json` file:
 
 1. After configuring your MCP client, restart it completely.
 2. Start a new chat and instruct it to use the tool:
-   - "Use agentic_search to find information about quantum computing."
+   - "Use the search tool to find information about quantum computing."
+   - "Search for the latest news about artificial intelligence and filter by last week."
    - "Extract text and HTML from the URL https://traylinx.com"
 3. When the client requests permission, grant it.
 4. You should receive a response containing both text content and potentially structured data.
@@ -110,10 +112,31 @@ The Traylinx Search Engine MCP Server supports multiple response types:
 * **Embedded HTML**: For URL extractions, the server can return the scraped HTML
 * **Search Items**: Structured search results with title, URL, and snippet
 * **Media Items**: Images, videos, and other media found during the search
+* **News Articles**: Recent news with thumbnails and metadata
+* **Raw API Response**: Complete response data for advanced use cases
+
+### Using the Recency Filter
+
+To filter search results by recency:
+
+```
+// Example from Claude Desktop
+Use the search tool to find recent news about SpaceX with results from the last day only.
+
+// Example from a custom client
+{
+  "name": "search",
+  "arguments": {
+    "query": "SpaceX launches",
+    "search_recency_filter": "week"
+  }
+}
+```
 
 ## Features
 
 * **Rich Content Types**: Returns multiple content types beyond just text
+* **Time Filtering**: Filter results by recency (month, week, day, hour)
 * **Secure API Key Handling**: API key stays in environment variables
 * **Configurable Endpoint**: Easily switch between API endpoints if needed
 * **Full MCP Compliance**: Implements all required MCP server methods
