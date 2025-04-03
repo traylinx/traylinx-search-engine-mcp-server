@@ -40,6 +40,7 @@ startCommand:
       }
     })
 
-# Build context is the root directory
+# Build configuration
 build:
-  dockerBuildPath: . 
+  dockerBuildPath: .
+  preBuildCommand: "./build.sh" # Run the build script before Docker build 
