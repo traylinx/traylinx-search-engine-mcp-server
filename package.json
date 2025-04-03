@@ -1,0 +1,32 @@
+{
+  "name": "traylinx-search-engine-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Agentic Search API",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "traylinx-search-engine-mcp-server": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js",
+    "clean": "shx rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "shx": "^0.3.4",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

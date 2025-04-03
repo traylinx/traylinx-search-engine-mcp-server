@@ -1,0 +1,57 @@
+# Git
+.git
+.gitignore
+.github
+
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+
+# Build output
+dist
+build
+.tsbuildinfo
+
+# Environment variables (we'll set these in Docker)
+.env
+.env.*
+
+# Documentation
+README.md
+CHANGELOG.md
+docs
+*.md
+
+# Docker
+Dockerfile
+docker-compose*
+.dockerignore
+
+# IDE files
+.idea
+.vscode
+*.sublime-*
+
+# Tests
+test
+coverage
+.nyc_output
+*.test.js
+*.spec.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+.editorconfig
+.eslintrc
+.eslintignore
+.prettierrc
+.prettierignore
+.travis.yml
+.gitlab-ci.yml
+nodemon.json
+*.log 
