@@ -256,6 +256,7 @@ try {
                 };
             }
 
+            const response = await callAgenticSearchApi(query, recencyFilter);
             const { 
                 mainContent, 
                 items, 
@@ -266,18 +267,45 @@ try {
                 model, 
                 created, 
                 usage 
-            } = await callAgenticSearchApi(query, recencyFilter);
+            } = response;
 
             const responseParts = [];
+            
+            // Add main text content
             if (mainContent) responseParts.push({ type: "text", text: mainContent });
             
-            // Add search results as embedded resource
-            if (items) responseParts.push({ 
+            // Create a comprehensive search results object that includes everything
+            const completeSearchData = {
+                metadata: {
+                    id,
+                    model,
+                    created,
+                    usage
+                },
+                results: items || [],
+                citations: citations || [],
+                news: news || []
+            };
+            
+            // Add the comprehensive data as a single embedded resource
+            responseParts.push({ 
                 type: "embedded_resource", 
-                uri: "mcp://search/results", 
-                title: "Search Results", 
-                data: { results: items }
+                uri: "mcp://search/complete_results", 
+                title: "Complete Search Results", 
+                data: completeSearchData
             });
+            
+            // Also add each component separately for clients that support it
+            
+            // Add search results as embedded resource
+            if (items && items.length > 0) {
+                responseParts.push({ 
+                    type: "embedded_resource", 
+                    uri: "mcp://search/results", 
+                    title: "Search Results", 
+                    data: { results: items }
+                });
+            }
             
             // Add citations as a specific resource
             if (citations && citations.length > 0) {
@@ -289,22 +317,7 @@ try {
                 });
             }
             
-            // Add usage metrics if available
-            if (usage) {
-                responseParts.push({ 
-                    type: "embedded_resource", 
-                    uri: "mcp://search/metadata", 
-                    title: "Search Metadata", 
-                    data: { 
-                        id, 
-                        model, 
-                        created,
-                        usage
-                    }
-                });
-            }
-            
-            // Add news as a specific resource type
+            // Add news as a specific resource type with proper structure
             if (news && news.length) {
                 responseParts.push({ 
                     type: "embedded_resource", 
@@ -332,6 +345,14 @@ try {
                     }
                 }
             }
+            
+            // Add the raw API response as a special resource for debugging and full access
+            responseParts.push({ 
+                type: "embedded_resource", 
+                uri: "mcp://search/raw_response", 
+                title: "Raw API Response", 
+                data: response 
+            });
             
             if (responseParts.length === 0) {
                 responseParts.push({ type: "text", text: "Agentic Search completed but returned no results." });
