@@ -1,0 +1,45 @@
+# Smithery configuration file for the TypeScript Server:
+# https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # This part defines what configuration the user needs to provide
+    type: object
+    required:
+      # The API key is essential for the server to function
+      - agenticSearchApiKey
+    properties:
+      agenticSearchApiKey:
+        type: string
+        description: The API key for your Agentic Search API. This will be set as an environment variable for the server process.
+      agenticSearchApiUrl:
+        type: string
+        description: The base URL for your Agentic Search API.
+        default: "https://agentic-search-engines-n3n7u.ondigitalocean.app" # Your default URL
+      logLevel:
+         type: string
+         description: Logging level for the server (e.g., INFO, DEBUG).
+         default: "INFO"
+
+  commandFunction:
+    # This JavaScript function tells Smithery HOW to run your compiled code
+    # It receives the 'config' object containing values the user entered
+    |-
+    config => ({
+      // Command to execute: node (to run JavaScript)
+      command: 'node',
+      // Arguments for the command: path to the compiled main file
+      args: ['dist/index.js'], // Assumes your tsconfig.json compiles src/index.ts to dist/index.js
+      env: {
+          // Pass the configuration values from the user input
+          // into the environment variables for the node process
+          AGENTIC_SEARCH_API_KEY: config.agenticSearchApiKey,
+          AGENTIC_SEARCH_API_URL: config.agenticSearchApiUrl || 'https://agentic-search-engines-n3n7u.ondigitalocean.app', // Use default if not provided
+          LOG_LEVEL: config.logLevel || 'INFO' // Use default if not provided
+      }
+    })
+
+# Build context is the root directory
+build:
+  dockerBuildPath: . 

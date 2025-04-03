@@ -1,6 +1,6 @@
 # Traylinx Search Engine MCP Server
 
-[![smithery badge](https://smithery.ai/badge/traylinx-search-engine-mcp-server)](https://smithery.ai/server/traylinx-search-engine-mcp-server) <!-- Update URL if you publish -->
+[![smithery badge](https://smithery.ai/badge/traylinx/traylinx-search-engine-mcp-server)](https://smithery.ai/server/traylinx/traylinx-search-engine-mcp-server)
 
 A Model Context Protocol (MCP) server that acts as a bridge to the deployed **Agentic Search API**. It allows MCP clients like Claude Desktop and Cursor to utilize intelligent search capabilities with both text summaries and structured data (HTML, images, and more).
 
@@ -117,6 +117,25 @@ The Traylinx Search Engine MCP Server supports multiple response types:
 * **Secure API Key Handling**: API key stays in environment variables
 * **Configurable Endpoint**: Easily switch between API endpoints if needed
 * **Full MCP Compliance**: Implements all required MCP server methods
+
+## Deployment
+
+### Smithery.ai Deployment
+
+This MCP server can be deployed to [Smithery.ai](https://smithery.ai):
+
+1. Create/login to your Smithery account
+2. Click "Deploy a New MCP Server"
+3. Enter ID: `traylinx-search-engine-mcp-server`  
+4. Use base directory: `.` (dot for root)
+5. Click "Create"
+
+Once deployed, you can reference this server in Claude's web interface by using:
+```
+Use the traylinx-search-engine-mcp-server to search for [your query]
+```
+
+**Note:** You'll need to provide your `AGENTIC_SEARCH_API_KEY` as an environment variable in the Smithery deployment settings.
 
 ## Troubleshooting
 

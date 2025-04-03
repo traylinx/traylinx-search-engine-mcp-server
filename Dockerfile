@@ -1,21 +1,20 @@
-FROM node:22.12-alpine AS builder
-
-COPY . /app
+FROM node:18-slim
 
 WORKDIR /app
 
-RUN --mount=type=cache,target=/root/.npm npm install
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install --production
 
-FROM node:22-alpine AS release
+# Copy source code and build
+COPY . .
+RUN npm run build
 
-WORKDIR /app
+# Set execution permissions
+RUN chmod +x dist/index.js
 
-COPY --from=builder /app/dist /app/dist
-COPY --from=builder /app/package.json /app/package.json
-COPY --from=builder /app/package-lock.json /app/package-lock.json
+# Use port 3000 by default (Smithery will override this with its own PORT)
+ENV PORT=3000
 
-ENV NODE_ENV=production
-
-RUN npm ci --ignore-scripts --omit-dev
-
-ENTRYPOINT ["node", "dist/index.js"]
+# Run the server
+CMD ["node", "dist/index.js"]
