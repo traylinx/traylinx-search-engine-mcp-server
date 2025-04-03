@@ -84,15 +84,20 @@ log.info(`Final API Endpoint: ${FINAL_API_URL}`);
 
 // --- Tool Definition (Static) ---
 const AGENTIC_SEARCH_TOOL = {
-    name: "agentic_search",
-    description: "Performs an intelligent search using the configured Agentic Search API.",
+    name: "search",
+    description: "Perform a web search using Traylinx's API, which provides detailed and contextually relevant results with citations. By default, no time filtering is applied to search results.",
     inputSchema: {
         type: "object",
         properties: { 
             query: { 
                 type: "string", 
-                description: "Search query, question, or URL" 
-            } 
+                description: "The search query to perform"
+            },
+            search_recency_filter: {
+                type: "string",
+                description: "Filter search results by recency (options: month, week, day, hour). If not specified, no time filtering is applied.",
+                enum: ["month", "week", "day", "hour"]
+            }
         },
         required: ["query"],
     },
@@ -102,9 +107,13 @@ const AGENTIC_SEARCH_TOOL = {
 interface SearchItem { title?: string; snippet?: string; url?: string; [key: string]: any; }
 interface ApiResponse { mainContent: string; items: SearchItem[] | null; media: Record<string, any> | null; }
 
-async function callAgenticSearchApi(query: string): Promise<ApiResponse> {
+async function callAgenticSearchApi(query: string, recencyFilter?: string): Promise<ApiResponse> {
     // API Key & URL checked at startup, assumed valid here
-    const payload = { model: "agentic-search", messages: [{ role: "user", content: query }] };
+    const payload = { 
+        model: "agentic-search", 
+        messages: [{ role: "user", content: query }],
+        options: recencyFilter ? { recency_filter: recencyFilter } : undefined
+    };
     const headers = {
         "Authorization": `Bearer ${AGENTIC_SEARCH_API_KEY}`,
         "Content-Type": "application/json",
@@ -194,6 +203,8 @@ try {
             }
             
             const query = args?.query;
+            const recencyFilter = args?.search_recency_filter;
+            
             if (typeof query !== 'string' || !query) {
                 return {
                     content: [{ type: "text", text: "Missing or invalid 'query' argument." }],
@@ -201,7 +212,14 @@ try {
                 };
             }
 
-            const { mainContent, items, media } = await callAgenticSearchApi(query);
+            if (recencyFilter && !["month", "week", "day", "hour"].includes(recencyFilter)) {
+                return {
+                    content: [{ type: "text", text: "Invalid search_recency_filter value. Must be one of: month, week, day, hour" }],
+                    isError: true,
+                };
+            }
+
+            const { mainContent, items, media } = await callAgenticSearchApi(query, recencyFilter);
 
             const responseParts = [];
             if (mainContent) responseParts.push({ type: "text", text: mainContent });
