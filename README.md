@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/traylinx-traylinx-search-engine-mcp-server-badge.png)](https://mseep.ai/app/traylinx-traylinx-search-engine-mcp-server)
+
 # Traylinx Search Engine MCP Server
 
 [![smithery badge](https://smithery.ai/badge/traylinx/traylinx-search-engine-mcp-server)](https://smithery.ai/server/traylinx/traylinx-search-engine-mcp-server)
